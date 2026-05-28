@@ -35,7 +35,7 @@ jobs:
 
       - name: Generate daily report
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           DATE_OVERRIDE: ${{ github.event.inputs.date_override }}
         run: python scripts/generate_daily.py
 
