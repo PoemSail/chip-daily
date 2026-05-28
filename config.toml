@@ -1,0 +1,37 @@
+baseURL = "https://PoemSail.github.io/chip-daily/"
+languageCode = "zh-cn"
+defaultContentLanguage = "zh"
+title = "芯片日报"
+theme = "chip"
+paginate = 10
+enableRobotsTXT = true
+
+[params]
+  description = "每日芯片设计与半导体制造精选资讯"
+  author = "PoemSail"
+  keywords = ["芯片", "半导体", "EDA", "晶圆制造", "集成电路", "日报"]
+  showReadingTime = false
+  showWordCount = false
+
+[menu]
+  [[menu.main]]
+    name = "首页"
+    url = "/"
+    weight = 1
+  [[menu.main]]
+    name = "精选"
+    url = "/tags/top/"
+    weight = 2
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+  [markup.tableOfContents]
+    startLevel = 2
+    endLevel = 3
+
+[outputs]
+  home = ["HTML", "RSS"]
+  section = ["HTML", "RSS"]
+  page = ["HTML"]

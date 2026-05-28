@@ -1,0 +1,13 @@
+<header class="site-header">
+  <div class="header-inner">
+    <a href="{{ "/" | relURL }}" class="site-logo">
+      <div class="logo-icon">芯</div>
+      <span class="logo-text">{{ .Site.Title }}</span>
+    </a>
+    <nav class="site-nav">
+      {{ range .Site.Menus.main }}
+      <a href="{{ .URL }}" class="nav-link{{ if $.IsHome }} active{{ end }}">{{ .Name }}</a>
+      {{ end }}
+    </nav>
+  </div>
+</header>

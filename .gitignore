@@ -1,0 +1,9 @@
+public/
+resources/_gen/
+.hugo_build.lock
+*.log
+__pycache__/
+*.pyc
+.env
+token.txt
+setup.ps1
