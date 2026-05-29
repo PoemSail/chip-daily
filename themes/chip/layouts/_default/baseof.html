@@ -16,157 +16,101 @@
   {{ partial "footer.html" . }}
 </div>
 
-<!-- ══ Claude Pixel Pet ══════════════════════════════════════ -->
+<!-- ══ Pixel Pet ═══════════════════════════════════════════ -->
 <div id="pet-wrap" aria-hidden="true">
   <div id="pet-shadow"></div>
   <div id="pet-body">
-    <svg id="pet-svg" viewBox="0 0 56 72"
+    <!--
+      Game grid: 7 cols × 12 rows, P=9px
+      col  0  1  2  3  4  5  6
+      r0   .  .  E  .  .  E  .     ears
+      r1   .  .  E  .  .  E  .
+      r2   H  H  H  H  H  H  H     head
+      r3   H  D  D  H  D  D  H     eyes
+      r4   H  D  D  H  D  D  H
+      r5   H  H  H  H  H  H  H     head-bottom
+      r6   .  H  H  H  H  H  .     body-top
+      r7   H  H  H  H  H  H  H     arms-row
+      r8   .  H  H  H  H  H  .     body-bottom
+      r9   .  H  .  .  .  H  .     legs
+      r10  .  H  .  .  .  H  .
+    -->
+    <svg id="pet-svg"
+         viewBox="0 0 63 99"
          xmlns="http://www.w3.org/2000/svg"
-         shape-rendering="crispEdges" width="84" height="108">
-      <!-- Antennae -->
-      <rect x="12" y="0"  width="8" height="14" fill="#8B4A28"/>
-      <rect x="36" y="0"  width="8" height="14" fill="#8B4A28"/>
-      <!-- Antenna tips (lit) -->
-      <rect x="13" y="0"  width="6" height="5"  fill="#FF8C52"/>
-      <rect x="37" y="0"  width="6" height="5"  fill="#FF8C52"/>
-      <!-- Head -->
-      <rect x="4"  y="12" width="48" height="30" fill="#CC785C"/>
-      <!-- Head shade (bottom edge) -->
-      <rect x="4"  y="38" width="48" height="4"  fill="#A85A3C"/>
-      <!-- Eye sockets -->
-      <rect x="9"  y="19" width="14" height="14" fill="#1E0A04"/>
-      <rect x="33" y="19" width="14" height="14" fill="#1E0A04"/>
-      <!-- Eye glow / iris -->
-      <rect id="eye-l-glow" x="10" y="20" width="12" height="12" fill="#4A1E0E"/>
-      <rect id="eye-r-glow" x="34" y="20" width="12" height="12" fill="#4A1E0E"/>
-      <!-- Pupils (moved by JS) -->
-      <rect id="pupil-l" x="13" y="22" width="6" height="7" fill="#E8C4A0"/>
-      <rect id="pupil-r" x="37" y="22" width="6" height="7" fill="#E8C4A0"/>
-      <!-- Mouth slit -->
-      <rect x="18" y="35" width="20" height="3"  fill="#7A3C1E"/>
-      <!-- Body -->
-      <rect x="14" y="44" width="28" height="16" fill="#AA6040"/>
-      <!-- Body highlight -->
-      <rect x="14" y="44" width="28" height="4"  fill="#CC785C"/>
-      <!-- Arms -->
-      <rect x="2"  y="44" width="12" height="10" fill="#CC785C"/>
-      <rect x="42" y="44" width="12" height="10" fill="#CC785C"/>
-      <!-- Arm shade -->
-      <rect x="2"  y="50" width="12" height="4"  fill="#A85A3C"/>
-      <rect x="42" y="50" width="12" height="4"  fill="#A85A3C"/>
-      <!-- Legs -->
-      <rect x="14" y="60" width="10" height="12" fill="#8B4A28"/>
-      <rect x="32" y="60" width="10" height="12" fill="#8B4A28"/>
-      <!-- Feet -->
-      <rect x="12" y="68" width="14" height="4"  fill="#6A3418"/>
-      <rect x="30" y="68" width="14" height="4"  fill="#6A3418"/>
+         shape-rendering="crispEdges"
+         width="88" height="139">
+
+      <!-- ears -->
+      <rect x="18" y="0"  width="9" height="18" fill="#CC7040"/>
+      <rect x="45" y="0"  width="9" height="18" fill="#CC7040"/>
+
+      <!-- head (full width rows 2-5) -->
+      <rect x="0"  y="18" width="63" height="36" fill="#CC7040"/>
+
+      <!-- left eye -->
+      <rect x="9"  y="27" width="18" height="18" fill="#1E0804"/>
+      <!-- right eye -->
+      <rect x="36" y="27" width="18" height="18" fill="#1E0804"/>
+
+      <!-- body top (row 6: cols 1-5) -->
+      <rect x="9"  y="54" width="45" height="9"  fill="#CC7040"/>
+      <!-- arms row (row 7: full width) -->
+      <rect x="0"  y="63" width="63" height="9"  fill="#CC7040"/>
+      <!-- body bottom (row 8: cols 1-5) -->
+      <rect x="9"  y="72" width="45" height="9"  fill="#CC7040"/>
+
+      <!-- left leg (col 1, rows 9-10) -->
+      <rect x="9"  y="81" width="9"  height="18" fill="#CC7040"/>
+      <!-- right leg (col 5, rows 9-10) -->
+      <rect x="45" y="81" width="9"  height="18" fill="#CC7040"/>
     </svg>
   </div>
 </div>
 
 <script>
 (function(){
-  /* ── Spotlight ─────────────────────────── */
-  var tx=window.innerWidth/2, ty=window.innerHeight/2, rx=tx, ry=ty;
+  /* spotlight */
+  var tx=window.innerWidth/2,ty=window.innerHeight/2,rx=tx,ry=ty;
   document.addEventListener('mousemove',function(e){tx=e.clientX;ty=e.clientY},{passive:true});
   document.addEventListener('touchmove',function(e){if(e.touches[0]){tx=e.touches[0].clientX;ty=e.touches[0].clientY}},{passive:true});
-  (function loop(){
-    rx+=(tx-rx)*.08; ry+=(ty-ry)*.08;
+  (function loop(){rx+=(tx-rx)*.08;ry+=(ty-ry)*.08;
     document.documentElement.style.setProperty('--mx',rx.toFixed(1)+'px');
     document.documentElement.style.setProperty('--my',ry.toFixed(1)+'px');
     requestAnimationFrame(loop);
   })();
 
-  /* ── Pet ───────────────────────────────── */
-  var wrap   = document.getElementById('pet-wrap');
-  var body   = document.getElementById('pet-body');
-  var shadow = document.getElementById('pet-shadow');
-  var pupilL = document.getElementById('pupil-l');
-  var pupilR = document.getElementById('pupil-r');
-  var eyeLG  = document.getElementById('eye-l-glow');
-  var eyeRG  = document.getElementById('eye-r-glow');
-  var busy   = false;
-  var clicks = 0;
+  /* pet */
+  var wrap=document.getElementById('pet-wrap');
+  var body=document.getElementById('pet-body');
+  var shadow=document.getElementById('pet-shadow');
+  var busy=false, clicks=0;
 
-  /* eye tracking */
-  document.addEventListener('mousemove',function(e){
-    var r = wrap.getBoundingClientRect();
-    var cx = r.left+r.width/2, cy = r.top+r.height/2;
-    var dx = (e.clientX-cx)/window.innerWidth*2;
-    var dy = (e.clientY-cy)/window.innerHeight*2;
-    var ox = Math.max(-3,Math.min(3,dx*6));
-    var oy = Math.max(-2,Math.min(2,dy*4));
-    pupilL.setAttribute('x',13+ox); pupilL.setAttribute('y',22+oy);
-    pupilR.setAttribute('x',37+ox); pupilR.setAttribute('y',22+oy);
-  },{passive:true});
-
-  /* jump */
-  function doJump(){
-    if(busy) return;
+  function play(cls,cb){
+    if(busy)return;
     busy=true;
     body.classList.remove('pet-idle');
-    body.classList.add('pet-jumping');
-    shadow.classList.add('shadow-small');
+    body.classList.add(cls);
     body.addEventListener('animationend',function(){
-      body.classList.remove('pet-jumping');
-      body.classList.add('pet-idle');
-      shadow.classList.remove('shadow-small');
-      busy=false;
-    },{once:true});
-  }
-
-  /* special every 5 clicks: spin */
-  function doSpin(){
-    body.classList.add('pet-spinning');
-    body.addEventListener('animationend',function(){
-      body.classList.remove('pet-spinning');
-      busy=false;
-    },{once:true});
-  }
-
-  /* random idle wiggle */
-  function doWiggle(){
-    if(busy) return;
-    busy=true;
-    body.classList.remove('pet-idle');
-    body.classList.add('pet-wiggle');
-    body.addEventListener('animationend',function(){
-      body.classList.remove('pet-wiggle');
+      body.classList.remove(cls);
       body.classList.add('pet-idle');
       busy=false;
+      if(cb)cb();
     },{once:true});
   }
 
-  /* click handler */
   wrap.addEventListener('click',function(){
     clicks++;
-    if(clicks%5===0){
-      if(busy) return;
-      busy=true;
-      body.classList.remove('pet-idle');
-      doSpin();
-    } else {
-      doJump();
+    if(clicks%5===0){play('pet-spin');}
+    else{
+      shadow.classList.add('shadow-small');
+      play('pet-jump',function(){shadow.classList.remove('shadow-small');});
     }
   });
 
-  /* hover eye glow */
-  wrap.addEventListener('mouseenter',function(){
-    eyeLG.setAttribute('fill','#8B2E0E');
-    eyeRG.setAttribute('fill','#8B2E0E');
-  });
-  wrap.addEventListener('mouseleave',function(){
-    eyeLG.setAttribute('fill','#4A1E0E');
-    eyeRG.setAttribute('fill','#4A1E0E');
-  });
+  /* random wiggle */
+  (function sched(){setTimeout(function(){play('pet-wiggle');sched();},9000+Math.random()*7000);})();
 
-  /* random wiggle every 9-16s */
-  function scheduleWiggle(){
-    setTimeout(function(){doWiggle();scheduleWiggle();},9000+Math.random()*7000);
-  }
-  scheduleWiggle();
-
-  /* start idle animation */
   body.classList.add('pet-idle');
 })();
 </script>
