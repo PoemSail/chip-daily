@@ -9,13 +9,14 @@
     <h2 class="post-card-title">
       <a href="{{ .RelPermalink }}">{{ .Title }}</a>
     </h2>
-    {{ with .Summary }}
-    <div class="post-card-excerpt">{{ . | plainify | truncate 180 }}</div>
-    {{ end }}
+    {{ with .Description }}
+    <p class="post-card-desc">{{ . }}</p>
+    {{ else }}{{ with .Summary }}
+    <p class="post-card-desc">{{ . | plainify | truncate 160 }}</p>
+    {{ end }}{{ end }}
     <a href="{{ .RelPermalink }}" class="post-read-more">阅读全文</a>
   </li>
   {{ end }}
 </ul>
-
 {{ template "_internal/pagination.html" . }}
 {{ end }}

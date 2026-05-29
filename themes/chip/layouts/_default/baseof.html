@@ -4,6 +4,17 @@
   {{ partial "head.html" . }}
 </head>
 <body>
+
+<!-- Aurora background blobs -->
+<div class="aurora" aria-hidden="true">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+
+<!-- Mouse spotlight -->
+<div id="spotlight" aria-hidden="true"></div>
+
 <div class="site-wrapper">
   {{ partial "header.html" . }}
   <main class="container">
@@ -12,150 +23,30 @@
   {{ partial "footer.html" . }}
 </div>
 
-<!-- ═══════════════════════════════════════
-     Claude Pet
-     ═══════════════════════════════════════ -->
-<div id="pet-wrap" title="点击我~">
-  <div id="pet-bubble" role="status" aria-live="polite"></div>
-
-  <div id="pet-body">
-    <svg id="pet-svg" width="72" height="72" viewBox="0 0 80 80"
-         xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <!-- Head -->
-      <circle cx="40" cy="42" r="34" fill="#CC785C"/>
-      <!-- Ear left -->
-      <circle cx="10" cy="22" r="7" fill="#B86848"/>
-      <line x1="15" y1="27" x2="20" y2="34" stroke="#B86848" stroke-width="5" stroke-linecap="round"/>
-      <!-- Ear right -->
-      <circle cx="70" cy="22" r="7" fill="#B86848"/>
-      <line x1="65" y1="27" x2="60" y2="34" stroke="#B86848" stroke-width="5" stroke-linecap="round"/>
-      <!-- Eye sockets -->
-      <circle cx="28" cy="38" r="10" fill="white" opacity="0.95"/>
-      <circle cx="52" cy="38" r="10" fill="white" opacity="0.95"/>
-      <!-- Pupils (moved by JS) -->
-      <circle id="pet-eye-l" cx="28" cy="38" r="5.5" fill="#1a0a04"/>
-      <circle id="pet-eye-r" cx="52" cy="38" r="5.5" fill="#1a0a04"/>
-      <!-- Eye highlights -->
-      <circle cx="30" cy="35" r="2" fill="white"/>
-      <circle cx="54" cy="35" r="2" fill="white"/>
-      <!-- Blink overlays (scale to 0 on blink) -->
-      <ellipse id="blink-l" cx="28" cy="38" rx="10" ry="10" fill="#CC785C"/>
-      <ellipse id="blink-r" cx="52" cy="38" rx="10" ry="10" fill="#CC785C"/>
-      <!-- Blush -->
-      <ellipse cx="18" cy="52" rx="7" ry="4.5" fill="rgba(220,110,80,0.35)"/>
-      <ellipse cx="62" cy="52" rx="7" ry="4.5" fill="rgba(220,110,80,0.35)"/>
-      <!-- Smile -->
-      <path d="M 25 54 Q 40 66 55 54"
-            stroke="#1a0a04" stroke-width="2.8"
-            fill="none" stroke-linecap="round"/>
-    </svg>
-  </div>
-
-  <span class="pet-name">Claude</span>
-</div>
-
 <script>
 (function() {
-  const wrap  = document.getElementById('pet-wrap');
-  const svg   = document.getElementById('pet-svg');
-  const eyeL  = document.getElementById('pet-eye-l');
-  const eyeR  = document.getElementById('pet-eye-r');
-  const blinkL = document.getElementById('blink-l');
-  const blinkR = document.getElementById('blink-r');
-  const bubble = document.getElementById('pet-bubble');
-
-  // ── Messages ──────────────────────────────────────────
-  const msgs = [
-    "你好！我是芯片日报助手 🤖",
-    "今日半导体资讯已就绪 ✓",
-    "TSMC N2 良率持续爬坡 📈",
-    "AI 算力需求依然旺盛 ⚡",
-    "发现重要技术突破！",
-    "HBM4E 首批样品已交付",
-    "2nm 节点竞赛进入决赛圈",
-    "国产存储自给率快速攀升",
-    "全球半导体设备市场再创新高",
-    "PoemCore × 芯片日报 🔬",
-    "每天中午12点准时更新！",
-    "正在分析全球晶圆厂动态...",
-    "英伟达、AMD、台积电... 我都在看 👀",
-    "有什么想了解的芯片资讯吗？",
-    "Chiplet 生态加速演进中",
-  ];
-  let msgIdx = 0;
-  let bubbleTimer = null;
-
-  // ── Eye tracking ──────────────────────────────────────
-  const EYE_L = { bx: 28, by: 38 };
-  const EYE_R = { bx: 52, by: 38 };
-  const MAX_OFFSET = 3;
-
-  function trackEyes(mx, my) {
-    const rect = svg.getBoundingClientRect();
-    if (!rect.width) return;
-    const cx = rect.left + rect.width * 0.5;
-    const cy = rect.top  + rect.height * 0.5;
-    const dx = mx - cx;
-    const dy = my - cy;
-    const angle = Math.atan2(dy, dx);
-    const dist = Math.min(MAX_OFFSET, Math.hypot(dx, dy) * 0.04);
-    const ox = Math.cos(angle) * dist;
-    const oy = Math.sin(angle) * dist;
-    eyeL.setAttribute('cx', EYE_L.bx + ox);
-    eyeL.setAttribute('cy', EYE_L.by + oy);
-    eyeR.setAttribute('cx', EYE_R.bx + ox);
-    eyeR.setAttribute('cy', EYE_R.by + oy);
-  }
+  var sp = document.getElementById('spotlight');
+  var rx = 0, ry = 0, tx = window.innerWidth / 2, ty = window.innerHeight / 2;
+  var raf;
 
   document.addEventListener('mousemove', function(e) {
-    trackEyes(e.clientX, e.clientY);
+    tx = e.clientX; ty = e.clientY;
   }, { passive: true });
+
+  // Smooth follow with lerp
+  function tick() {
+    rx += (tx - rx) * 0.08;
+    ry += (ty - ry) * 0.08;
+    document.documentElement.style.setProperty('--mx', rx.toFixed(1) + 'px');
+    document.documentElement.style.setProperty('--my', ry.toFixed(1) + 'px');
+    raf = requestAnimationFrame(tick);
+  }
+  tick();
 
   // Touch support
   document.addEventListener('touchmove', function(e) {
-    if (e.touches[0]) trackEyes(e.touches[0].clientX, e.touches[0].clientY);
+    if (e.touches[0]) { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }
   }, { passive: true });
-
-  // ── Blink ─────────────────────────────────────────────
-  function doBlink() {
-    [blinkL, blinkR].forEach(function(el) {
-      el.style.transform = 'scaleY(0.05)';
-      el.style.transformOrigin = 'center';
-    });
-    setTimeout(function() {
-      [blinkL, blinkR].forEach(function(el) {
-        el.style.transform = 'scaleY(1)';
-      });
-    }, 140);
-    setTimeout(doBlink, 3500 + Math.random() * 4500);
-  }
-  setTimeout(doBlink, 2000 + Math.random() * 2000);
-
-  // ── Speech bubble ─────────────────────────────────────
-  function showBubble(text) {
-    bubble.textContent = text;
-    bubble.classList.add('show');
-    clearTimeout(bubbleTimer);
-    bubbleTimer = setTimeout(function() {
-      bubble.classList.remove('show');
-    }, 3800);
-  }
-
-  wrap.addEventListener('click', function() {
-    showBubble(msgs[msgIdx % msgs.length]);
-    msgIdx++;
-  });
-
-  // Auto-greet after 4 seconds
-  setTimeout(function() {
-    showBubble(msgs[0]);
-    msgIdx = 1;
-  }, 4000);
-
-  // ── Wiggle on hover ───────────────────────────────────
-  wrap.addEventListener('mouseenter', function() {
-    wrap.style.transition = 'transform 0.1s';
-  });
 })();
 </script>
 </body>
