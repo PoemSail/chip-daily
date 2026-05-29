@@ -369,62 +369,62 @@ main{flex:1;padding:2.5rem 0 5rem}
 
 /* ══ Pixel Pet ═════════════════════════════════════════════ */
 #pet-wrap{
-  position:fixed;bottom:22px;right:22px;
-  z-index:9999;cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;
-  user-select:none;-webkit-user-select:none;
+  position:fixed;bottom:20px;right:20px;z-index:9999;
+  cursor:pointer;display:flex;flex-direction:column;
+  align-items:center;user-select:none;-webkit-user-select:none;
 }
 #pet-body{
-  image-rendering:pixelated;
-  image-rendering:crisp-edges;
-  transform-origin:50% 100%;
-  will-change:transform;
+  image-rendering:pixelated;image-rendering:crisp-edges;
+  transform-origin:50% 100%;will-change:transform;
 }
-#pet-body:hover{filter:brightness(1.18) drop-shadow(0 0 10px rgba(204,112,64,.7))}
+#pet-wrap:hover #pet-body{
+  filter:drop-shadow(0 0 10px rgba(204,112,64,.75));
+}
 #pet-shadow{
-  width:56px;height:8px;
-  background:radial-gradient(ellipse,rgba(204,112,64,.32) 0%,transparent 70%);
-  border-radius:50%;margin-top:3px;
+  width:54px;height:7px;
+  background:radial-gradient(ellipse,rgba(204,112,64,.3) 0%,transparent 70%);
+  border-radius:50%;margin-top:2px;
   transition:transform .15s,opacity .15s;
 }
-.shadow-small{transform:scaleX(.4);opacity:.2}
+.sh-small{transform:scaleX(.38);opacity:.18}
 
-/* float */
-.pet-idle{animation:pet-float 2.6s ease-in-out infinite}
-@keyframes pet-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+/* idle float */
+.p-idle{animation:p-float 2.5s ease-in-out infinite}
+@keyframes p-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 
-/* jump */
-.pet-jump{animation:pet-jump .65s cubic-bezier(.36,.07,.19,.97) forwards}
-@keyframes pet-jump{
-  0%  {transform:scaleX(1.2)  scaleY(.8)  translateY(3px)}
-  10% {transform:scaleX(.88)  scaleY(1.12)translateY(-5px)}
-  38% {transform:scaleX(.93)  scaleY(1.07)translateY(-48px)}
-  55% {transform:scaleX(.95)  scaleY(1.05)translateY(-54px)}
-  72% {transform:scaleX(1)    scaleY(1)   translateY(-14px)}
-  84% {transform:scaleX(1.24) scaleY(.76) translateY(0)}
-  92% {transform:scaleX(.95)  scaleY(1.05)translateY(-9px)}
+/* jump — 挤压 → 弹起 → 落地挤压 → 小弹 */
+.p-jump{animation:p-jump .7s cubic-bezier(.36,.07,.19,.97) forwards}
+@keyframes p-jump{
+  0%  {transform:scaleX(1.22) scaleY(.78) translateY(4px)}
+  8%  {transform:scaleX(.86)  scaleY(1.14)translateY(-6px)}
+  30% {transform:scaleX(.92)  scaleY(1.08)translateY(-52px)}
+  50% {transform:scaleX(.94)  scaleY(1.06)translateY(-58px)}
+  68% {transform:scaleX(1)    scaleY(1)   translateY(-16px)}
+  80% {transform:scaleX(1.28) scaleY(.72) translateY(0)}
+  89% {transform:scaleX(.93)  scaleY(1.07)translateY(-10px)}
+  95% {transform:scaleX(1.08) scaleY(.92) translateY(0)}
   100%{transform:scaleX(1)    scaleY(1)   translateY(0)}
 }
 
 /* wiggle */
-.pet-wiggle{animation:pet-wiggle .7s ease-in-out forwards}
-@keyframes pet-wiggle{
-  0%,100%{transform:rotate(0)   translateY(0)}
-  18%    {transform:rotate(-14deg)translateY(-5px)}
-  36%    {transform:rotate(14deg) translateY(-7px)}
-  55%    {transform:rotate(-8deg) translateY(-3px)}
-  72%    {transform:rotate(7deg)  translateY(-2px)}
+.p-wiggle{animation:p-wiggle .75s ease-in-out forwards}
+@keyframes p-wiggle{
+  0%,100%{transform:rotate(0)      translateY(0)}
+  18%    {transform:rotate(-16deg) translateY(-5px)}
+  36%    {transform:rotate(16deg)  translateY(-7px)}
+  55%    {transform:rotate(-10deg) translateY(-3px)}
+  72%    {transform:rotate(8deg)   translateY(-2px)}
 }
 
 /* spin (每5次点击) */
-.pet-spin{animation:pet-spin .55s ease-in-out forwards}
-@keyframes pet-spin{
+.p-spin{animation:p-spin .55s ease-in-out forwards}
+@keyframes p-spin{
   0%  {transform:rotateY(0deg)   scale(1)}
-  45% {transform:rotateY(180deg) scale(1.12)}
+  45% {transform:rotateY(180deg) scale(1.15)}
   100%{transform:rotateY(360deg) scale(1)}
 }
 
 @media(max-width:640px){
   #pet-wrap{bottom:12px;right:12px}
-  #pet-body svg{width:62px;height:98px}
+  #pet-body svg{width:63px;height:90px}
 }

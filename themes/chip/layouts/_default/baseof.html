@@ -16,102 +16,112 @@
   {{ partial "footer.html" . }}
 </div>
 
-<!-- ══ Pixel Pet ═══════════════════════════════════════════ -->
+<!-- ═══ Pixel Pet ══════════════════════════════════════════ -->
+<!--
+  Game grid  7 cols × 10 rows   P = 9px
+  col   0  1  2  3  4  5  6
+  r0    .  .  ■  .  .  ■  .   ← ears  (1 row only)
+  r1    ■  ■  ■  ■  ■  ■  ■   ← head
+  r2    ■  □  □  ■  □  □  ■   ← eyes  (□=dark)
+  r3    ■  □  □  ■  □  □  ■
+  r4    ■  ■  ■  ■  ■  ■  ■   ← head bottom
+  r5    .  ■  ■  ■  ■  ■  .   ← body top
+  r6    ■  ■  ■  ■  ■  ■  ■   ← arms row (full width)
+  r7    .  ■  ■  ■  ■  ■  .   ← body bottom
+  r8    .  ■  .  .  .  ■  .   ← legs
+  r9    .  ■  .  .  .  ■  .
+-->
 <div id="pet-wrap" aria-hidden="true">
   <div id="pet-shadow"></div>
   <div id="pet-body">
-    <!--
-      Game grid: 7 cols × 12 rows, P=9px
-      col  0  1  2  3  4  5  6
-      r0   .  .  E  .  .  E  .     ears
-      r1   .  .  E  .  .  E  .
-      r2   H  H  H  H  H  H  H     head
-      r3   H  D  D  H  D  D  H     eyes
-      r4   H  D  D  H  D  D  H
-      r5   H  H  H  H  H  H  H     head-bottom
-      r6   .  H  H  H  H  H  .     body-top
-      r7   H  H  H  H  H  H  H     arms-row
-      r8   .  H  H  H  H  H  .     body-bottom
-      r9   .  H  .  .  .  H  .     legs
-      r10  .  H  .  .  .  H  .
-    -->
     <svg id="pet-svg"
-         viewBox="0 0 63 99"
+         viewBox="0 0 63 90"
          xmlns="http://www.w3.org/2000/svg"
          shape-rendering="crispEdges"
-         width="88" height="139">
+         width="84" height="120">
 
-      <!-- ears -->
-      <rect x="18" y="0"  width="9" height="18" fill="#CC7040"/>
-      <rect x="45" y="0"  width="9" height="18" fill="#CC7040"/>
+      <!-- ears  col 2 & col 5,  row 0 -->
+      <rect x="18" y="0"  width="9" height="9"  fill="#CC7040"/>
+      <rect x="45" y="0"  width="9" height="9"  fill="#CC7040"/>
 
-      <!-- head (full width rows 2-5) -->
-      <rect x="0"  y="18" width="63" height="36" fill="#CC7040"/>
+      <!-- head  rows 1-4 (x0, y9, 63×36) -->
+      <rect x="0"  y="9"  width="63" height="36" fill="#CC7040"/>
 
-      <!-- left eye -->
-      <rect x="9"  y="27" width="18" height="18" fill="#1E0804"/>
-      <!-- right eye -->
-      <rect x="36" y="27" width="18" height="18" fill="#1E0804"/>
+      <!-- left eye   cols 1-2, rows 2-3 (x9, y18, 18×18) -->
+      <rect x="9"  y="18" width="18" height="18" fill="#1E0804"/>
+      <!-- right eye  cols 4-5, rows 2-3 (x36, y18, 18×18) -->
+      <rect x="36" y="18" width="18" height="18" fill="#1E0804"/>
 
-      <!-- body top (row 6: cols 1-5) -->
-      <rect x="9"  y="54" width="45" height="9"  fill="#CC7040"/>
-      <!-- arms row (row 7: full width) -->
-      <rect x="0"  y="63" width="63" height="9"  fill="#CC7040"/>
-      <!-- body bottom (row 8: cols 1-5) -->
-      <rect x="9"  y="72" width="45" height="9"  fill="#CC7040"/>
+      <!-- body top   cols 1-5, row 5 -->
+      <rect x="9"  y="45" width="45" height="9"  fill="#CC7040"/>
+      <!-- arms row   cols 0-6, row 6 (full width) -->
+      <rect x="0"  y="54" width="63" height="9"  fill="#CC7040"/>
+      <!-- body bot   cols 1-5, row 7 -->
+      <rect x="9"  y="63" width="45" height="9"  fill="#CC7040"/>
 
-      <!-- left leg (col 1, rows 9-10) -->
-      <rect x="9"  y="81" width="9"  height="18" fill="#CC7040"/>
-      <!-- right leg (col 5, rows 9-10) -->
-      <rect x="45" y="81" width="9"  height="18" fill="#CC7040"/>
+      <!-- left leg   col 1, rows 8-9 -->
+      <rect x="9"  y="72" width="9"  height="18" fill="#CC7040"/>
+      <!-- right leg  col 5, rows 8-9 -->
+      <rect x="45" y="72" width="9"  height="18" fill="#CC7040"/>
     </svg>
   </div>
 </div>
 
 <script>
 (function(){
-  /* spotlight */
+  /* ─ spotlight ─────────────────────────────────── */
   var tx=window.innerWidth/2,ty=window.innerHeight/2,rx=tx,ry=ty;
   document.addEventListener('mousemove',function(e){tx=e.clientX;ty=e.clientY},{passive:true});
-  document.addEventListener('touchmove',function(e){if(e.touches[0]){tx=e.touches[0].clientX;ty=e.touches[0].clientY}},{passive:true});
-  (function loop(){rx+=(tx-rx)*.08;ry+=(ty-ry)*.08;
+  document.addEventListener('touchmove',function(e){
+    if(e.touches[0]){tx=e.touches[0].clientX;ty=e.touches[0].clientY}
+  },{passive:true});
+  (function loop(){
+    rx+=(tx-rx)*.08; ry+=(ty-ry)*.08;
     document.documentElement.style.setProperty('--mx',rx.toFixed(1)+'px');
     document.documentElement.style.setProperty('--my',ry.toFixed(1)+'px');
     requestAnimationFrame(loop);
   })();
 
-  /* pet */
-  var wrap=document.getElementById('pet-wrap');
-  var body=document.getElementById('pet-body');
-  var shadow=document.getElementById('pet-shadow');
-  var busy=false, clicks=0;
+  /* ─ pet ──────────────────────────────────────── */
+  var wrap   = document.getElementById('pet-wrap');
+  var body   = document.getElementById('pet-body');
+  var shadow = document.getElementById('pet-shadow');
+  var busy   = false;
+  var clicks = 0;
 
-  function play(cls,cb){
-    if(busy)return;
-    busy=true;
-    body.classList.remove('pet-idle');
+  /* 播放一个动画 class，结束后恢复 idle */
+  function play(cls, onDone){
+    if(busy) return;
+    busy = true;
+    body.classList.remove('p-idle');
     body.classList.add(cls);
-    body.addEventListener('animationend',function(){
+    body.addEventListener('animationend', function handler(){
+      body.removeEventListener('animationend', handler);
       body.classList.remove(cls);
-      body.classList.add('pet-idle');
-      busy=false;
-      if(cb)cb();
-    },{once:true});
+      body.classList.add('p-idle');
+      busy = false;
+      if(onDone) onDone();
+    });
   }
 
-  wrap.addEventListener('click',function(){
+  /* 点击 → 跳 / 每5次 → 旋转 */
+  wrap.addEventListener('click', function(){
     clicks++;
-    if(clicks%5===0){play('pet-spin');}
-    else{
-      shadow.classList.add('shadow-small');
-      play('pet-jump',function(){shadow.classList.remove('shadow-small');});
+    if(clicks % 5 === 0){
+      play('p-spin');
+    } else {
+      shadow.classList.add('sh-small');
+      play('p-jump', function(){ shadow.classList.remove('sh-small'); });
     }
   });
 
-  /* random wiggle */
-  (function sched(){setTimeout(function(){play('pet-wiggle');sched();},9000+Math.random()*7000);})();
+  /* 随机摇摆 */
+  (function sched(){
+    setTimeout(function(){ play('p-wiggle'); sched(); },
+      9000 + Math.random()*7000);
+  })();
 
-  body.classList.add('pet-idle');
+  body.classList.add('p-idle');
 })();
 </script>
 </body>
