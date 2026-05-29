@@ -1,52 +1,173 @@
 <!DOCTYPE html>
 <html lang="{{ .Site.LanguageCode }}">
-<head>
-  {{ partial "head.html" . }}
-</head>
+<head>{{ partial "head.html" . }}</head>
 <body>
 
-<!-- Aurora background blobs -->
 <div class="aurora" aria-hidden="true">
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>
   <div class="blob blob-3"></div>
 </div>
-
-<!-- Mouse spotlight -->
 <div id="spotlight" aria-hidden="true"></div>
 
 <div class="site-wrapper">
   {{ partial "header.html" . }}
-  <main class="container">
-    {{ block "main" . }}{{ end }}
-  </main>
+  <main class="container">{{ block "main" . }}{{ end }}</main>
   {{ partial "footer.html" . }}
 </div>
 
+<!-- ══ Claude Pixel Pet ══════════════════════════════════════ -->
+<div id="pet-wrap" aria-hidden="true">
+  <div id="pet-shadow"></div>
+  <div id="pet-body">
+    <svg id="pet-svg" viewBox="0 0 56 72"
+         xmlns="http://www.w3.org/2000/svg"
+         shape-rendering="crispEdges" width="84" height="108">
+      <!-- Antennae -->
+      <rect x="12" y="0"  width="8" height="14" fill="#8B4A28"/>
+      <rect x="36" y="0"  width="8" height="14" fill="#8B4A28"/>
+      <!-- Antenna tips (lit) -->
+      <rect x="13" y="0"  width="6" height="5"  fill="#FF8C52"/>
+      <rect x="37" y="0"  width="6" height="5"  fill="#FF8C52"/>
+      <!-- Head -->
+      <rect x="4"  y="12" width="48" height="30" fill="#CC785C"/>
+      <!-- Head shade (bottom edge) -->
+      <rect x="4"  y="38" width="48" height="4"  fill="#A85A3C"/>
+      <!-- Eye sockets -->
+      <rect x="9"  y="19" width="14" height="14" fill="#1E0A04"/>
+      <rect x="33" y="19" width="14" height="14" fill="#1E0A04"/>
+      <!-- Eye glow / iris -->
+      <rect id="eye-l-glow" x="10" y="20" width="12" height="12" fill="#4A1E0E"/>
+      <rect id="eye-r-glow" x="34" y="20" width="12" height="12" fill="#4A1E0E"/>
+      <!-- Pupils (moved by JS) -->
+      <rect id="pupil-l" x="13" y="22" width="6" height="7" fill="#E8C4A0"/>
+      <rect id="pupil-r" x="37" y="22" width="6" height="7" fill="#E8C4A0"/>
+      <!-- Mouth slit -->
+      <rect x="18" y="35" width="20" height="3"  fill="#7A3C1E"/>
+      <!-- Body -->
+      <rect x="14" y="44" width="28" height="16" fill="#AA6040"/>
+      <!-- Body highlight -->
+      <rect x="14" y="44" width="28" height="4"  fill="#CC785C"/>
+      <!-- Arms -->
+      <rect x="2"  y="44" width="12" height="10" fill="#CC785C"/>
+      <rect x="42" y="44" width="12" height="10" fill="#CC785C"/>
+      <!-- Arm shade -->
+      <rect x="2"  y="50" width="12" height="4"  fill="#A85A3C"/>
+      <rect x="42" y="50" width="12" height="4"  fill="#A85A3C"/>
+      <!-- Legs -->
+      <rect x="14" y="60" width="10" height="12" fill="#8B4A28"/>
+      <rect x="32" y="60" width="10" height="12" fill="#8B4A28"/>
+      <!-- Feet -->
+      <rect x="12" y="68" width="14" height="4"  fill="#6A3418"/>
+      <rect x="30" y="68" width="14" height="4"  fill="#6A3418"/>
+    </svg>
+  </div>
+</div>
+
 <script>
-(function() {
-  var sp = document.getElementById('spotlight');
-  var rx = 0, ry = 0, tx = window.innerWidth / 2, ty = window.innerHeight / 2;
-  var raf;
+(function(){
+  /* ── Spotlight ─────────────────────────── */
+  var tx=window.innerWidth/2, ty=window.innerHeight/2, rx=tx, ry=ty;
+  document.addEventListener('mousemove',function(e){tx=e.clientX;ty=e.clientY},{passive:true});
+  document.addEventListener('touchmove',function(e){if(e.touches[0]){tx=e.touches[0].clientX;ty=e.touches[0].clientY}},{passive:true});
+  (function loop(){
+    rx+=(tx-rx)*.08; ry+=(ty-ry)*.08;
+    document.documentElement.style.setProperty('--mx',rx.toFixed(1)+'px');
+    document.documentElement.style.setProperty('--my',ry.toFixed(1)+'px');
+    requestAnimationFrame(loop);
+  })();
 
-  document.addEventListener('mousemove', function(e) {
-    tx = e.clientX; ty = e.clientY;
-  }, { passive: true });
+  /* ── Pet ───────────────────────────────── */
+  var wrap   = document.getElementById('pet-wrap');
+  var body   = document.getElementById('pet-body');
+  var shadow = document.getElementById('pet-shadow');
+  var pupilL = document.getElementById('pupil-l');
+  var pupilR = document.getElementById('pupil-r');
+  var eyeLG  = document.getElementById('eye-l-glow');
+  var eyeRG  = document.getElementById('eye-r-glow');
+  var busy   = false;
+  var clicks = 0;
 
-  // Smooth follow with lerp
-  function tick() {
-    rx += (tx - rx) * 0.08;
-    ry += (ty - ry) * 0.08;
-    document.documentElement.style.setProperty('--mx', rx.toFixed(1) + 'px');
-    document.documentElement.style.setProperty('--my', ry.toFixed(1) + 'px');
-    raf = requestAnimationFrame(tick);
+  /* eye tracking */
+  document.addEventListener('mousemove',function(e){
+    var r = wrap.getBoundingClientRect();
+    var cx = r.left+r.width/2, cy = r.top+r.height/2;
+    var dx = (e.clientX-cx)/window.innerWidth*2;
+    var dy = (e.clientY-cy)/window.innerHeight*2;
+    var ox = Math.max(-3,Math.min(3,dx*6));
+    var oy = Math.max(-2,Math.min(2,dy*4));
+    pupilL.setAttribute('x',13+ox); pupilL.setAttribute('y',22+oy);
+    pupilR.setAttribute('x',37+ox); pupilR.setAttribute('y',22+oy);
+  },{passive:true});
+
+  /* jump */
+  function doJump(){
+    if(busy) return;
+    busy=true;
+    body.classList.remove('pet-idle');
+    body.classList.add('pet-jumping');
+    shadow.classList.add('shadow-small');
+    body.addEventListener('animationend',function(){
+      body.classList.remove('pet-jumping');
+      body.classList.add('pet-idle');
+      shadow.classList.remove('shadow-small');
+      busy=false;
+    },{once:true});
   }
-  tick();
 
-  // Touch support
-  document.addEventListener('touchmove', function(e) {
-    if (e.touches[0]) { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }
-  }, { passive: true });
+  /* special every 5 clicks: spin */
+  function doSpin(){
+    body.classList.add('pet-spinning');
+    body.addEventListener('animationend',function(){
+      body.classList.remove('pet-spinning');
+      busy=false;
+    },{once:true});
+  }
+
+  /* random idle wiggle */
+  function doWiggle(){
+    if(busy) return;
+    busy=true;
+    body.classList.remove('pet-idle');
+    body.classList.add('pet-wiggle');
+    body.addEventListener('animationend',function(){
+      body.classList.remove('pet-wiggle');
+      body.classList.add('pet-idle');
+      busy=false;
+    },{once:true});
+  }
+
+  /* click handler */
+  wrap.addEventListener('click',function(){
+    clicks++;
+    if(clicks%5===0){
+      if(busy) return;
+      busy=true;
+      body.classList.remove('pet-idle');
+      doSpin();
+    } else {
+      doJump();
+    }
+  });
+
+  /* hover eye glow */
+  wrap.addEventListener('mouseenter',function(){
+    eyeLG.setAttribute('fill','#8B2E0E');
+    eyeRG.setAttribute('fill','#8B2E0E');
+  });
+  wrap.addEventListener('mouseleave',function(){
+    eyeLG.setAttribute('fill','#4A1E0E');
+    eyeRG.setAttribute('fill','#4A1E0E');
+  });
+
+  /* random wiggle every 9-16s */
+  function scheduleWiggle(){
+    setTimeout(function(){doWiggle();scheduleWiggle();},9000+Math.random()*7000);
+  }
+  scheduleWiggle();
+
+  /* start idle animation */
+  body.classList.add('pet-idle');
 })();
 </script>
 </body>

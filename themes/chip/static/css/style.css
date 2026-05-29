@@ -366,3 +366,76 @@ main{flex:1;padding:2.5rem 0 5rem}
   .logo-text{font-size:.9rem}
   .poemcore-badge{display:none}
 }
+
+/* ══ Claude Pixel Pet ══════════════════════════════════════ */
+#pet-wrap {
+  position: fixed; bottom: 24px; right: 28px;
+  z-index: 9999; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center;
+  user-select: none; -webkit-user-select: none;
+}
+#pet-body {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  transform-origin: 50% 100%;
+  will-change: transform;
+}
+#pet-shadow {
+  width: 60px; height: 10px;
+  background: radial-gradient(ellipse, rgba(204,120,92,.35) 0%, transparent 70%);
+  border-radius: 50%;
+  margin-top: 2px;
+  transition: transform .15s, opacity .15s;
+}
+.shadow-small { transform: scaleX(.45); opacity: .25; }
+
+/* idle float */
+.pet-idle { animation: pet-float 2.6s ease-in-out infinite; }
+@keyframes pet-float {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-5px); }
+}
+
+/* jump */
+.pet-jumping {
+  animation: pet-jump .68s cubic-bezier(.36,.07,.19,.97) forwards;
+}
+@keyframes pet-jump {
+  0%   { transform: scaleX(1.18) scaleY(.82) translateY(3px); }
+  10%  { transform: scaleX(.9)  scaleY(1.1) translateY(-6px); }
+  35%  { transform: scaleX(.93) scaleY(1.07) translateY(-44px); }
+  52%  { transform: scaleX(.95) scaleY(1.05) translateY(-50px); }
+  70%  { transform: scaleX(1)   scaleY(1)   translateY(-16px); }
+  82%  { transform: scaleX(1.22) scaleY(.78) translateY(0); }
+  91%  { transform: scaleX(.95) scaleY(1.05) translateY(-9px); }
+  100% { transform: scaleX(1)   scaleY(1)   translateY(0); }
+}
+
+/* wiggle */
+.pet-wiggle { animation: pet-wiggle .7s ease-in-out forwards; }
+@keyframes pet-wiggle {
+  0%,100% { transform: rotate(0deg)   translateY(0); }
+  18%     { transform: rotate(-14deg) translateY(-4px); }
+  36%     { transform: rotate(14deg)  translateY(-6px); }
+  54%     { transform: rotate(-9deg)  translateY(-3px); }
+  72%     { transform: rotate(7deg)   translateY(-2px); }
+}
+
+/* spin (every 5th click) */
+.pet-spinning { animation: pet-spin .55s ease-in-out forwards; }
+@keyframes pet-spin {
+  0%   { transform: rotateY(0deg)   scale(1); }
+  40%  { transform: rotateY(180deg) scale(1.12); }
+  100% { transform: rotateY(360deg) scale(1); }
+}
+
+/* hover glow */
+#pet-wrap:hover #pet-body {
+  filter: drop-shadow(0 0 10px rgba(204,120,92,.65));
+}
+
+@media(max-width:640px){
+  #pet-wrap { bottom:14px; right:14px; }
+  #pet-body svg { width:60px; height:78px; }
+  #pet-shadow { width:44px; }
+}
