@@ -8,7 +8,7 @@
       <a href="{{ . }}" class="source-link" target="_blank" rel="noopener">原始 Issue ↗</a>
       {{ end }}
       {{ range .Params.tags }}
-      <a href="{{ "/tags/" | relURL }}{{ . | urlize }}" class="tag">{{ . }}</a>
+      <span class="tag">{{ . }}</span>
       {{ end }}
     </div>
   </header>
