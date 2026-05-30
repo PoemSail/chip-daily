@@ -368,6 +368,7 @@ main{flex:1;padding:2.5rem 0 5rem}
 }
 
 /* ══ Nucleus — 全息轨道球 ══════════════════════════════════ */
+#n-canvas{position:absolute;inset:0;pointer-events:none;z-index:3}
 #nucleus{
   position:fixed;bottom:24px;right:24px;
   width:110px;height:110px;z-index:9999;
@@ -507,5 +508,6 @@ main{flex:1;padding:2.5rem 0 5rem}
 #nucleus:hover .n-glow{animation-duration:1.2s}
 
 @media(max-width:640px){
-  #nucleus{bottom:12px;right:12px;width:80px;height:80px;transform:scale(.82);transform-origin:bottom right}
+  #n-canvas{position:absolute;inset:0;pointer-events:none;z-index:3}
+#nucleus{bottom:12px;right:12px;width:80px;height:80px;transform:scale(.82);transform-origin:bottom right}
 }
