@@ -16,23 +16,42 @@
   {{ partial "footer.html" . }}
 </div>
 
-<!-- Nucleus Pet -->
-<div id="nucleus" aria-hidden="true">
+<!--
+  NUCLEUS — 全息轨道球
+  inline style 强制 fixed，防止任何 CSS 被覆盖
+  三条轨道环 + 四粒子 Canvas + 呼吸光晕 + 点击冲击波
+-->
+<div id="nucleus"
+     style="position:fixed!important;bottom:24px;right:24px;z-index:9999;
+            width:110px;height:110px;cursor:pointer;
+            display:flex;align-items:center;justify-content:center;">
+
+  <!-- 环境呼吸光晕 -->
   <div class="n-glow"></div>
+
+  <!-- 三条轨道环（CSS 动画）-->
+  <!-- 轨道1: 青色 72° rotateX 顺时针 4s -->
+  <div class="n-orbit n-o1"><div class="n-ring n-r1"></div></div>
+  <!-- 轨道2: 紫色 40°X+30°Y 逆时针 7s -->
+  <div class="n-orbit n-o2"><div class="n-ring n-r2"></div></div>
+  <!-- 轨道3: 白色近垂直 11s -->
+  <div class="n-orbit n-o3"><div class="n-ring n-r3"></div></div>
+
+  <!-- 核心球体：深蓝渐变 + 网格纹 + 高光 -->
   <div class="n-core" id="n-core">
-    <div class="n-shine"></div>
     <div class="n-grid"></div>
+    <div class="n-shine"></div>
   </div>
-  <div class="n-orbit n-o1"><div class="n-ring"></div></div>
-  <div class="n-orbit n-o2"><div class="n-ring"></div></div>
-  <div class="n-orbit n-o3"><div class="n-ring"></div></div>
-  <canvas id="n-canvas" width="110" height="110"></canvas>
+
+  <!-- Canvas：4粒子实时轨迹 -->
+  <canvas id="n-cvs" width="110" height="110"
+    style="position:absolute;inset:0;pointer-events:none;z-index:5;"></canvas>
 </div>
 
 <script>
 (function(){
-  /* spotlight */
-  var tx=innerWidth/2, ty=innerHeight/2, rx=tx, ry=ty;
+  /* ── spotlight ─────────────────────────────── */
+  var tx=innerWidth/2,ty=innerHeight/2,rx=tx,ry=ty;
   addEventListener('mousemove',function(e){tx=e.clientX;ty=e.clientY},{passive:true});
   addEventListener('touchmove',function(e){var t=e.touches[0];if(t){tx=t.clientX;ty=t.clientY}},{passive:true});
   (function L(){
@@ -42,100 +61,103 @@
     requestAnimationFrame(L);
   })();
 
-  /* nucleus */
+  /* ── nucleus ───────────────────────────────── */
   var wrap  = document.getElementById('nucleus');
   var core  = document.getElementById('n-core');
-  var cvs   = document.getElementById('n-canvas');
+  var cvs   = document.getElementById('n-cvs');
   var ctx   = cvs.getContext('2d');
+
+  /* JS再次强制 fixed，彻底防止覆盖 */
+  wrap.style.position = 'fixed';
+
   var CX=55, CY=55, D=Math.PI/180;
-  var hovered=false, clickCount=0;
+  var hovered=false, clicks=0;
 
   /*
-   * 三条轨道的屏幕投影参数
-   * 轨道1: rotateX(72°)  ring w=96px → R=48
-   *   x = CX + 48·cos(t)
-   *   y = CY + 48·cos(72°)·sin(t)  = CY + 14.8·sin(t)
+   * 三条轨道在屏幕上的投影椭圆参数：
+   * 轨道1: rotateX(72°), ring r=48
+   *   x = CX + 48·cos(t)   y = CY + 48·cos(72°)·sin(t) = CY+14.8·sin(t)
    *
-   * 轨道2: rotateX(40°) rotateY(30°)  ring w=78px → R=39
-   *   x = CX + 39·cos(30°)·cos(t) + 39·sin(40°)·sin(30°)·sin(t)
-   *     = CX + 33.8·cos(t) + 12.5·sin(t)
-   *   y = CY + 39·cos(40°)·sin(t)  = CY + 29.9·sin(t)
+   * 轨道2: rotateX(40°) rotateY(30°), ring r=39
+   *   x = CX + 39·cos30°·cos(t) + 39·sin40°·sin30°·sin(t) = CX+33.8·cos(t)+12.5·sin(t)
+   *   y = CY + 39·cos40°·sin(t) = CY+29.9·sin(t)
    *
-   * 轨道3: rotateY(88°)  ring w=60px → R=30
-   *   x = CX + 30·cos(88°)·cos(t)  ≈ CX + 1.05·cos(t)
+   * 轨道3: rotateY(88°), ring r=30
+   *   x = CX + 30·cos88°·cos(t) ≈ CX+1.05·cos(t)
    *   y = CY + 30·sin(t)
    */
-  var orbits = [
-    /* orbit 1a — 青色主粒子 */
-    { t:0,    dt:0.025,  pos: function(t){ return {x: CX+48*Math.cos(t),             y: CY+14.8*Math.sin(t)          }; }, rgb:'0,229,255',   r:5,   tl:32 },
-    /* orbit 1b — 青色对侧粒子 (offset π) */
-    { t:Math.PI, dt:0.025, pos: function(t){ return {x: CX+48*Math.cos(t),           y: CY+14.8*Math.sin(t)          }; }, rgb:'0,200,255',   r:3.5, tl:22 },
-    /* orbit 2  — 紫色粒子 */
-    { t:1.0,  dt:-0.015, pos: function(t){ return {x: CX+33.8*Math.cos(t)+12.5*Math.sin(t), y: CY+29.9*Math.sin(t)  }; }, rgb:'192,132,252', r:4,   tl:24 },
-    /* orbit 3  — 白色粒子 (近乎垂直) */
-    { t:1.6,  dt:0.010,  pos: function(t){ return {x: CX+1.05*Math.cos(t),           y: CY+30*Math.sin(t)            }; }, rgb:'200,240,255', r:2.5, tl:16 }
+  var P = [
+    /* [0] 轨道1主粒子 — 青色大 */
+    {t:0,      dt:0.025,  rgb:'0,229,255',   r:5.5, tl:34,
+     xy:function(t){return{x:CX+48*Math.cos(t),          y:CY+14.8*Math.sin(t)}}},
+    /* [1] 轨道1对侧粒子 — 青色小 */
+    {t:Math.PI,dt:0.025,  rgb:'0,200,255',   r:3.5, tl:22,
+     xy:function(t){return{x:CX+48*Math.cos(t),          y:CY+14.8*Math.sin(t)}}},
+    /* [2] 轨道2粒子 — 紫色 */
+    {t:1.0,    dt:-0.015, rgb:'192,132,252', r:4.5, tl:26,
+     xy:function(t){return{x:CX+33.8*Math.cos(t)+12.5*Math.sin(t), y:CY+29.9*Math.sin(t)}}},
+    /* [3] 轨道3粒子 — 白色 */
+    {t:1.6,    dt:0.010,  rgb:'210,245,255', r:2.8, tl:18,
+     xy:function(t){return{x:CX+1.05*Math.cos(t),        y:CY+30*Math.sin(t)}}}
   ];
-  var trails = orbits.map(function(){ return []; });
+  var trails = [[],[],[],[]];
 
-  function drawAll(){
+  function frame(){
     var spd = hovered ? 2.5 : 1;
-    orbits.forEach(function(o){ o.t += o.dt * spd; });
-
     ctx.clearRect(0,0,110,110);
-
-    orbits.forEach(function(o, i){
-      var p = o.pos(o.t);
-      trails[i].push({x:p.x, y:p.y});
-      if(trails[i].length > o.tl) trails[i].shift();
-
-      /* trail */
-      for(var j=0; j<trails[i].length; j++){
-        var ratio = j/trails[i].length;
-        var tp = trails[i][j];
+    P.forEach(function(p,i){
+      p.t += p.dt * spd;
+      var pos = p.xy(p.t);
+      trails[i].push({x:pos.x, y:pos.y});
+      if(trails[i].length > p.tl) trails[i].shift();
+      /* 尾迹 */
+      for(var j=0;j<trails[i].length;j++){
+        var ratio=j/trails[i].length, tp=trails[i][j];
         ctx.beginPath();
-        ctx.arc(tp.x, tp.y, Math.max(0.4, o.r*ratio*0.75), 0, Math.PI*2);
-        ctx.fillStyle = 'rgba('+o.rgb+','+(ratio*0.55)+')';
+        ctx.arc(tp.x,tp.y,Math.max(0.5,p.r*ratio*0.7),0,Math.PI*2);
+        ctx.fillStyle='rgba('+p.rgb+','+(ratio*0.6)+')';
         ctx.fill();
       }
-
-      /* head glow */
-      var g = ctx.createRadialGradient(p.x,p.y,0, p.x,p.y, o.r*2.2);
-      g.addColorStop(0,   'rgba(255,255,255,0.98)');
-      g.addColorStop(0.35,'rgba('+o.rgb+',0.85)');
-      g.addColorStop(1,   'rgba('+o.rgb+',0)');
+      /* 粒子头（径向渐变光球）*/
+      var g=ctx.createRadialGradient(pos.x,pos.y,0,pos.x,pos.y,p.r*2.4);
+      g.addColorStop(0,'rgba(255,255,255,.98)');
+      g.addColorStop(.3,'rgba('+p.rgb+',.88)');
+      g.addColorStop(1,'rgba('+p.rgb+',0)');
       ctx.beginPath();
-      ctx.arc(p.x, p.y, o.r*2.2, 0, Math.PI*2);
-      ctx.fillStyle = g;
+      ctx.arc(pos.x,pos.y,p.r*2.4,0,Math.PI*2);
+      ctx.fillStyle=g;
       ctx.fill();
     });
-
-    requestAnimationFrame(drawAll);
+    requestAnimationFrame(frame);
   }
-  drawAll();
+  frame();
 
-  /* hover */
-  wrap.addEventListener('mouseenter',function(){ hovered=true; });
-  wrap.addEventListener('mouseleave',function(){ hovered=false; });
+  /* hover — 轨道加速（CSS 变量驱动） */
+  wrap.addEventListener('mouseenter',function(){
+    hovered=true;
+    wrap.classList.add('n-fast');
+  });
+  wrap.addEventListener('mouseleave',function(){
+    hovered=false;
+    wrap.classList.remove('n-fast');
+  });
 
-  /* click */
+  /* click — 冲击波 + 核心爆闪 + 每5次变紫 */
   wrap.addEventListener('click',function(){
-    clickCount++;
-    /* 双重冲击波 */
-    [0,160].forEach(function(delay){
+    clicks++;
+    [0,180].forEach(function(d){
       setTimeout(function(){
-        var w=document.createElement('div');
-        w.className='n-shockwave';
-        wrap.appendChild(w);
-        setTimeout(function(){w.remove();},800);
-      },delay);
+        var s=document.createElement('div');
+        s.className='n-shock';
+        wrap.appendChild(s);
+        setTimeout(function(){s.remove();},800);
+      },d);
     });
-    /* 核心闪光 */
     core.classList.add('n-flash');
-    setTimeout(function(){ core.classList.remove('n-flash'); },300);
-    /* 每5次变紫 */
-    if(clickCount%5===0){
+    setTimeout(function(){core.classList.remove('n-flash');},320);
+    if(clicks%5===0){
       wrap.classList.add('n-purple');
-      setTimeout(function(){ wrap.classList.remove('n-purple'); },1800);
+      setTimeout(function(){wrap.classList.remove('n-purple');},1800);
     }
   });
 })();
